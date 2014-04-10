@@ -1,0 +1,39 @@
+--Bayesian Networks--
+
+Model to make predictions
+Probability distribution P(X|a)
+
+Bayes Rule
+
+Basics
+  Structured representation
+  Conditional independence
+  Naive Bayes model
+  Independence facts
+
+Nodes in graphs connected by arrows
+  No loops
+  Variables with arrows
+    Variable with no entering arrow
+      Assigned by marginal prob
+    Variable with entering arrow
+      Conditional distribution given entering node(s)
+      P(C|x) where x is from the entering node(s)
+
+      Say S leads into C
+      P(C,S) = P(C|S)P(S)
+      Marginalization: row and column sums
+
+    P(S|C) = (P(C|S)P(S))/P(C) = P(C,S)/P(C)
+
+  Extended to larger networks with multiple nodes
+
+  Independent variables: nodes with no entering arrows
+    Say A, G for age and gender
+    P(A,G) = P(G)P(A)
+
+  Say A and G lead into S, then S leads into C (for Smoking and Cancer)
+    Causal chain
+    Simplification of dependence
+
+Reduces size of necessary sample to get a reasonable estimate
