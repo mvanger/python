@@ -1,0 +1,98 @@
+numpy multidimensional arrays
+
+import numpy as np
+
+lists are not that efficient
+  have to check types of elements
+
+numpy array is homogeneous
+
+// For assignment 1
+// tensor dot product
+a = np.arange(60.).reshape(3,4,5)
+b = np.arange(24.).reshape(4,3,2)
+c = np.tensordot(a,b,axes=([1,0],[0,1]))
+
+OOP
+inheritance is shown in parenthesis at the class statement
+
+class Stack(list):
+  // code here
+
+#####
+modules:
+  BeautifulSoup => web scraping library (bs4)
+  requests => for getting webpages
+#####
+
+Bayesian Networks
+Three classes
+  BayesianNetwork, Node, DiscreteDistribution
+
+Node
+  methods:
+    name(str)
+    distribution
+    children[list(Node)]
+    set/get name
+    add child
+
+    getName(self):
+      return self.name
+
+    setName(self, newName):
+      self.name = newName
+
+    addChild(self, newNode):
+      // maybe check if newNode is already in list of children
+      self.children.append(newNode)
+
+    operator.__eq__(self, newNode):
+      return (self.name == newNode.name)
+
+    removeChild(self, name):
+      // code here
+
+    getChildren(self):
+      return self.children
+
+    addDistribution(self, newDistribution):
+
+DiscreteDistribution
+  states = (list[str])
+  probabilityTable
+
+  getTable():
+    // numpy multidimensional array
+
+BayesianNetworkPersistance
+  load(fileName):
+    // code here
+    return BN
+
+  save(BN, fileName):
+    // saves
+
+JSONPersistance
+  // saves BN to JSON
+
+XMLPersistance
+Could also serialize it as a string
+
+BN
+  methods
+    getNodes():
+
+error checking
+setting evidence
+  // bn2['alarm'].setEvidence('ringing')
+
+magic line
+  // bn2['burglary'].getMarginal()
+
+
+
+
+
+
+
