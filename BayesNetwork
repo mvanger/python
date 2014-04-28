@@ -18,6 +18,7 @@ class BayesNetwork:
 
     def __init__(self):
         self.nodes = []
+        self.evidence = {}
 
     ## Create nodes class
     class node():
@@ -38,8 +39,8 @@ class BayesNetwork:
             print('Name:\t' + self.name)
             print('Values:\t' + str(self.values))           # Maybe make this a bit prettier
             print('Prior distribution:\t' + str(self.prior))
-            print('Parents:\t' + str(self.parents))
-            print('Children:\t' + str(self.children))
+            print('Parents:\t' + str(self.parents))         # Change to for loop with names
+            print('Children:\t' + str(self.children))       # Change to for loop with names
 
     # Method to add nodes
     def addNode(self, node):
@@ -53,18 +54,27 @@ class BayesNetwork:
         print("Node \"" + node.name + "\" removed")
 
     # Create links - parents and children
-    def linkNodes(self, parent, child, joint = [], conditional = []):
+    def linkNodes(self, parent, child, joint = [], posterior = []):
         '''
-        Specify joint or conditional probabilities
+        Specify joint or posterior probabilities
         '''
         parent.children.append(child)
         child.parents.append(parent)
+        # Possibly create a new link object here which contains joint and posterior probabilities
 
-    # Method to observe overall structure
+    # Observe overall network structure
     def observeStructure(self):
         ### Will want to probably present this as a hierarchy - e.g. "level: nodeName"
         for node in self.nodes:
             print(node.name)
+
+    # Clear all evidence
+    def clearEvidence(self):
+        self.evidence = {}
+
+    # Set evidence
+    def setEvidence(self, node, value):
+        self.evidence[node.name] = value
 
 ### Test functionality
 
@@ -83,12 +93,20 @@ smokerNode = bn.node('Smoker',{'No': 0.8, 'Light': 0.15, 'Heavy': 0.05})
 bn.linkNodes(ageNode, smokerNode)
 bn.linkNodes(genderNode, smokerNode)
 
-#cancerNode = bn.node('Cancer',{'None': 0.935, 'Benign': 0.046, 'Malignant': 0.019})
+#cancerPrior = [0.935, 0.046, 0.019]
 cancerNode = bn.node('Cancer', ['None','Benign','Malignant'])
 bn.addNode(cancerNode)
 
-cancerGvSmoker = [[0.96,0.88,0.6],[0.03,0.08,0.25],[0.01,0.04,0.15]]
-bn.linkNodes(smokerNode, cancerNode, conditional = cancerGvSmoker)
+cancerGvnSmoker = [[0.96,0.88,0.6],[0.03,0.08,0.25],[0.01,0.04,0.15]]
+bn.linkNodes(smokerNode, cancerNode, posterior = cancerGvnSmoker)
 
 genderNode.observe()
 cancerNode.observe()
+smokerNode.observe()
+
+tempNode = bn.node('Temp', ['A','B','C'])
+bn.addNode(tempNode)
+bn.removeNode(tempNode)
+
+bn.clearEvidence()
+bn.setEvidence(ageNode,'young')
