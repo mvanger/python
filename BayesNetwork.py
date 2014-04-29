@@ -21,29 +21,35 @@ class BayesNetwork:
         self.nodes = []
 
     ## Create nodes class
-    class Node():
+    class Node:
+
         def __init__(self):
-            self.probabilities = []
-            self.evidence = {}
+            self.prob = []
+            self.evidence = []
 
         #  Option to add values and possibly distribution probabilities separately
-        def setProbDist(self, probabilities):
-            self.probabilities = probabilities
+        def setProbDist(self, probabilities = []):
+            self.prob = probabilities
 
         # Observe node
         def observe(self):
             print('Name:\t' + self.name)
             print('Values:\t' + str(self.values))           # Maybe make this a bit prettier
-            print('Distribution:\t' + str(self.probabilities))
+            print('Distribution:\t' + str(self.prob))
+            if self.evidence != self.prob:
+                print('Evidence:\t' + str(self.evidence))       # Only show if evidence exists
             print('Parents:\t' + str(self.parents))         # Change to for loop with names
 
         # Clear all evidence
         def clearEvidence(self):
-            self.evidence = {}
+            self.evidence = []
 
         # Set evidence
         def setEvidence(self, value):
-            self.evidence[self.name] = value
+            for i in range(0,len(self.values)):
+                if self.values[i] == value:
+                    self.evidence.append(1)
+                else: self.evidence.append(0)
 
     # Method to add nodes
     def addNode(self, name, values, parents = []):
@@ -69,7 +75,7 @@ class BayesNetwork:
 
 ### Test functionality
 
-bn = BayesNetwork()
+bn = BayesNetwork('BN1')
 
 ## Create, observe and remove a node
 ageNode = bn.addNode('Age', ['young','old'])
@@ -95,5 +101,9 @@ smokerNode.observe()
 tempNode = bn.addNode('Temp', ['A','B','C'])
 bn.removeNode(tempNode)
 
-ageNode.clearEvidence()
 ageNode.setEvidence('young')
+ageNode.observe()
+ageNode.clearEvidence()
+ageNode.observe()
+ageNode.setEvidence('old')
+ageNode.observe()
