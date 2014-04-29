@@ -96,30 +96,35 @@ class Node:
         for node in self.bn.nodes:
             if node.evidence:
                 evidenceNodes.append(node)
+                print('evidence = ' + str(node.name))
 
         # Create array with nodes to eliminate
         eliminateNodes = []
         for node in nodesRemaining:
+            print('Nodes Remaining = ' + str(node.name))
             if node != self and node.name not in evidenceNodes:
                 eliminateNodes.append(node)
+                print('Eliminate = ' + str(node.name))
 
         # Create factors iteratively
         factor = [dict()] * (len(eliminateNodes) + 1)
         factor[0] = {'Node': self.name, 'Prob': self.prob}
-        for i in range(0,len(eliminateNodes)):
-            for node in nodesRemaining:
-                if eliminateNodes[i] == node or eliminateNodes[i] in node.parents:   # Get node and children
-                    factor[i+1]['Node'] = eliminateNodes[i].name
-                    factor[i+1]['Prob'] = np.tensordot(
-                        np.tensordot(factor[i],eliminateNodes[i].evidence),
-                        np.tensordot(factorProbs[1],eliminateNodes[i].evidence))
+        # for i in range(0,len(eliminateNodes)):
+        i = 0
+        for node in nodesRemaining:
+            if eliminateNodes[i] == node or eliminateNodes[i] in node.parents:   # Get node and children
+                factor[i+1]['Node'] = eliminateNodes[i].name
+                factor[i+1]['Prob'] = sumProduct(factor[i],eliminateNodes[i].prob,eliminateNodes[i].evidence))
 
-            # Multiply and sum over eliminateNodes[i]
+        # Multiply and sum over eliminateNodes[i]
 
-            nodesRemaining.remove(eliminateNodes[i])
+        nodesRemaining.remove(eliminateNodes[i])
 
         belief = factor[len(eliminateNodes)] * self.prob
         return str(belief)
+
+def sumProduct():
+    pass
 
 ### Test functionality
 
