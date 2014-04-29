@@ -20,58 +20,13 @@ class BayesNetwork:
         self.name = name
         self.nodes = []
 
-    ## Create nodes class
-    class Node:
-
-        def __init__(self):
-            self.prob = []
-            self.evidence = []
-            self.belief = []
-
-        #  Option to add values and possibly distribution probabilities separately
-        def setProbDist(self, probabilities = []):
-            # Check each array adds to 1
-            # Check input has the correct dimensions
-            self.prob = probabilities
-
-        # Observe node
-        def observe(self):
-            print('Name:\t' + self.name)
-            print('Values:\t' + str(self.values))           # Maybe make this a bit prettier
-            print('Distribution:\t' + str(self.prob))
-            if self.evidence:
-                print('Evidence:\t' + str(self.evidence))       # Only show if evidence exists
-            if self.belief
-                print('Belief:\t' + str(self.belief))       # Only show if belief exists
-            print('Parents:\t' + str(self.parents))         # Change to for loop with names
-
-        # Clear all evidence
-        def clearEvidence(self):
-            self.evidence = []
-            print('Evidence cleared')
-
-        # Set evidence
-        def setEvidence(self, value):
-            for i in range(0,len(self.values)):
-                if self.values[i] == value:
-                    self.evidence.append(1)
-                else: self.evidence.append(0)
-
-        # Get belief
-        def getBelief(self, value):
-            if self.belief:
-                print('P(Some|shit) = ' + str(self.belief))
-                return self.belief
-            else:
-                print('P(Some other shit) = ' + str(self.prob))
-                return self.prob
-
     # Method to add nodes
     def addNode(self, name, values, parents = []):
-        node = self.Node()
+        node = Node()
         node.name = name
         node.values = values
         node.parents = parents
+        node.bn = self
         ### CONSIDER ADDING SOME CHECKS - E.G. WHETHER NODE ALREADY EXISTS, WHETHER PROBABILITIES SUM TO 1
         self.nodes.append(node)
         print("New node \"" + node.name + "\" created")
@@ -88,17 +43,83 @@ class BayesNetwork:
         for node in self.nodes:
             print(node.name)
 
-    # Calculate belief - would be good if this can be executed along with setEvidence
-    def calcBelief(self):
+## Create nodes class
+class Node:
+    '''
+    Hi
+    '''
+
+    def __init__(self):
+        self.prob = []
+        self.evidence = []
+        self.belief = []
+
+    #  Option to add values and possibly distribution probabilities separately
+    def setProbDist(self, probabilities = []):
+        # Check each array adds to 1
+        # Check input has the correct dimensions
+        self.prob = probabilities
+
+    # Observe node
+    def observe(self):
+        print('Name:\t' + self.name)
+        print('Values:\t' + str(self.values))           # Maybe make this a bit prettier
+        print('Distribution:\t' + str(self.prob))
+        if self.evidence:
+            print('Evidence:\t' + str(self.evidence))       # Only show if evidence exists
+        if self.belief:
+            print('Belief:\t' + str(self.belief))       # Only show if belief exists
+        print('Parents:\t' + str(self.parents))         # Change to for loop with names
+
+    # Clear all evidence
+    def clearEvidence(self):
+        self.evidence = []
+        self.belief = []
+        print('Evidence cleared')
+
+    # Set evidence
+    def setEvidence(self, value):
+        for i in range(0,len(self.values)):
+            if self.values[i] == value:
+                self.evidence.append(1)
+            else: self.evidence.append(0)
+
+    # Get belief
+    def getBelief(self):
         # Calculate all beliefs in network given the evidence at hand
 
         # Find all nodes with evidence
+        nodesRemaining = [x for x in self.bn.nodes]
+
+        # Create array with nodes that have evidence
         evidenceNodes = []
-        for node in self.nodes:
+        for node in self.bn.nodes:
             if node.evidence:
                 evidenceNodes.append(node)
 
-        # Do some hardcore formula to pull out the probabilities and evidence and infer the belief
+        # Create array with nodes to eliminate
+        eliminateNodes = []
+        for node in nodesRemaining:
+            if node != self and node.name not in evidenceNodes:
+                eliminateNodes.append(node)
+
+        # Create factors iteratively
+        factor = [dict()] * (len(eliminateNodes) + 1)
+        factor[0] = {'Node': self.name, 'Prob': self.prob}
+        for i in range(0,len(eliminateNodes)):
+            for node in nodesRemaining:
+                if eliminateNodes[i] == node or eliminateNodes[i] in node.parents:   # Get node and children
+                    factor[i+1]['Node'] = eliminateNodes[i].name
+                    factor[i+1]['Prob'] = np.tensordot(
+                        np.tensordot(factor[i],eliminateNodes[i].evidence),
+                        np.tensordot(factorProbs[1],eliminateNodes[i].evidence))
+
+            # Multiply and sum over eliminateNodes[i]
+
+            nodesRemaining.remove(eliminateNodes[i])
+
+        belief = factor[len(eliminateNodes)] * self.prob
+        return str(belief)
 
 ### Test functionality
 
@@ -128,10 +149,10 @@ smokerNode.observe()
 tempNode = bn.addNode('Temp', ['A','B','C'])
 bn.removeNode(tempNode)
 
-ageNode.setEvidence('young')
-ageNode.observe()
-ageNode.clearEvidence()
-ageNode.observe()
-ageNode.setEvidence('old')
-ageNode.observe()
-calcBelief()
+smokerNode.setEvidence('Light')
+print(ageNode.getBelief())
+
+# smokerNode.clearEvidence()
+# smokerNode.observe()
+# ageNode.setEvidence('old')
+# ageNode.observe()
