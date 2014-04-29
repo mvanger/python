@@ -30,6 +30,8 @@ class BayesNetwork:
 
         #  Option to add values and possibly distribution probabilities separately
         def setProbDist(self, probabilities = []):
+            # Check each array adds to 1
+            # Check input has the correct dimensions
             self.prob = probabilities
 
         # Observe node
