@@ -1,7 +1,7 @@
 # Bayesian Network
 # Sari Nahmad, Anthony Tockar, Mike Vanger
 
-import numpy as np
+import itertools
 
 class BayesNetwork:
 
@@ -43,6 +43,58 @@ class BayesNetwork:
         for node in self.nodes:
             print(node.name)
 
+# Method to calculate each term in variable elimination algorithm
+def sumProduct(factor, nodes):
+    if len(nodes) == 1:
+        return factor
+    else:
+        # First iteration - just want to sum term-probabilities over Gender
+        for n in nodes:
+            if n.evidence:
+                post = []
+
+                #Flatten probability matrix to access elements
+                toFlatten = [x for x in n.prob]
+                while True:
+                    if not isinstance(toFlatten[0],list):
+                        break
+                    else:
+                        toFlatten = list(itertools.chain(*toFlatten))
+                print(toFlatten)
+
+                for i in range(0,len(n.values)):
+                    if n.evidence[i] != 0:
+                        nValues = []
+                        for p in n.parents:
+                            nValues.append(len(p.values))
+                        print('nValues = ' + str(nValues))
+                        product = 1
+                        for j in nValues:
+                            product = product * j
+                        for k in range(0,product):
+                            print(k*int(len(toFlatten)/product) + i)
+                            post.append(toFlatten[k*int(len(toFlatten)/product) + i])
+                print('Post = ' + str(post))    # Debug
+            else:
+                cond = n.prob
+                print('Cond = ' + str(cond))    # Debug
+
+        sumProd = []
+        for j in range(0,(int(len(post)/len(cond)))):
+            sumTerm = 0
+            for c in range(0,len(cond)):
+                sumTerm = sumTerm + cond[c]*post[(c*2)+j]
+            sumProd.append(sumTerm)
+
+        print('SumProd = ' + str(sumProd))    # Debug
+        print('Factor = ' + str(factor))      # Debug
+
+        fXs = []
+        for i in range(0,len(factor)):
+            fXs.append(factor[i]*sumProd[i])
+
+        return fXs
+
 ## Create nodes class
 class Node:
     '''
@@ -69,7 +121,8 @@ class Node:
             print('Evidence:\t' + str(self.evidence))       # Only show if evidence exists
         if self.belief:
             print('Belief:\t' + str(self.belief))       # Only show if belief exists
-        print('Parents:\t' + str(self.parents))         # Change to for loop with names
+        print('Parents:\t',end='')
+        print([p.name for p in self.parents])         # Change to for loop with names
 
     # Clear all evidence
     def clearEvidence(self):
@@ -96,66 +149,113 @@ class Node:
         for node in self.bn.nodes:
             if node.evidence:
                 evidenceNodes.append(node)
-                print('evidence = ' + str(node.name))
+        print('Evidence = ',end='')
+        print([node.name for node in evidenceNodes])
 
         # Create array with nodes to eliminate
         eliminateNodes = []
+        print('Nodes Remaining = ',end='')
+        print([node.name for node in nodesRemaining])
         for node in nodesRemaining:
-            print('Nodes Remaining = ' + str(node.name))
-            if node != self and node.name not in evidenceNodes:
+            if node != self and node not in evidenceNodes:
                 eliminateNodes.append(node)
-                print('Eliminate = ' + str(node.name))
+        print('Eliminate = ',end='')
+        print([node.name for node in eliminateNodes])
 
         # Create factors iteratively
         factor = [dict()] * (len(eliminateNodes) + 1)
         factor[0] = {'Node': self.name, 'Prob': self.prob}
-        # for i in range(0,len(eliminateNodes)):
-        i = 0
-        for node in nodesRemaining:
-            if eliminateNodes[i] == node or eliminateNodes[i] in node.parents:   # Get node and children
-                factor[i+1]['Node'] = eliminateNodes[i].name
-                factor[i+1]['Prob'] = sumProduct(factor[i],eliminateNodes[i].prob,eliminateNodes[i].evidence))
+        for i in range(0,len(eliminateNodes)):
+            termNodes = []
+            for node in nodesRemaining:
+                if eliminateNodes[i] == node or eliminateNodes[i] in node.parents:   # Get node and children
+                    termNodes.append(node)
+            factor[i+1]['Node'] = eliminateNodes[i].name
+            ####### Debug
+            print('term names = ',end='')
+            print([n.name for n in termNodes])
+            print('term probabilities = ',end='')
+            print([n.prob for n in termNodes])
+            print('term evidence = ',end='')
+            print([n.evidence for n in termNodes])
+            #############
+            factor[i+1]['Prob'] = sumProduct(factor[i]['Prob'],termNodes)
 
-        # Multiply and sum over eliminateNodes[i]
+            nodesRemaining.remove(eliminateNodes[i])
 
-        nodesRemaining.remove(eliminateNodes[i])
+        belief = factor[len(eliminateNodes)]['Prob']
+        # Remember to normalise
+        return belief
 
-        belief = factor[len(eliminateNodes)] * self.prob
-        return str(belief)
-
-def sumProduct():
-    pass
 
 ### Test functionality
 
-bn = BayesNetwork('BN1')
+net = BayesNetwork("Jorge's sample net")
+A = net.addNode('A',['a1','a2'])
+C = net.addNode('C',['c1','c2','c3','c4'])
+B = net.addNode('B',['b1','b2','b3'],[A,C])
 
-## Create, observe and remove a node
-ageNode = bn.addNode('Age', ['young','old'])
-genderNode = bn.addNode('Gender',['M','F'])
-smokerNode = bn.addNode('Smoker',['No','Light','Heavy'],[ageNode,genderNode])
+A.setProbDist([0.9,0.1])
+C.setProbDist([0.1,0.2,0.3,0.4])
+B.setProbDist([
+           [ [0.2,0.4,0.4] , [0.33,0.33,0.34 ] ] , 
+           [ [0.1,0.5,0.4] , [0.3,0.1,0.6 ] ] , 
+           [ [0.01,0.01,0.98] , [0.2,0.7,0.1 ] ] , 
+           [ [0.2,0.1,0.7] , [0.9,0.05,0.05 ] ] 
+         ])
 
-ageNode.setProbDist([0.8, 0.2])
-genderNode.setProbDist([0.49,0.51])
-smokerNode.setProbDist([
-[[0.8, 0.15, 0.05],[0.7,0.2,0.1]],
-[[0.5, 0.2, 0.3],[0.5,0.25,0.25]],
-])
+B.setEvidence('b3')
 
-# cancerNode = bn.addNode('Cancer', ['None','Benign','Malignant'])
+B.observe()
+
+aAfterSettingB = A.getBelief()
+print("P(A|B=b3) =",aAfterSettingB)
+
+C.setEvidence('c4')
+
+aAfterSettingBC = A.getBelief();
+print("P(A|B=b3,C=c4) =",aAfterSettingBC)
+
+# >>> P(A|B=b3,C=c4) = [ 0.9921, 0.0079 ]
+# This value is also correct!
+
+# Finally. What if I clear the evidence on node B. 
+# What is the distribution of A now?
+
+B.clearEvidence()
+
+aAfterSettingC = A.getBelief();
+print("P(A|C=c4) =",aAfterSettingC)
+
+
+# bn = BayesNetwork('BN1')
+
+# ## Create, observe and remove a node
+# ageNode = bn.addNode('Age', ['young','old'])
+# genderNode = bn.addNode('Gender',['M','F'])
+# smokerNode = bn.addNode('Smoker',['No','Light','Heavy'],[ageNode,genderNode])
+
+# ageNode.setProbDist([0.8, 0.2])
+# genderNode.setProbDist([0.49,0.51])
+# smokerNode.setProbDist([
+# [[0.8, 0.15, 0.05],[0.7,0.2,0.1]],
+# [[0.5, 0.2, 0.3],[0.5,0.25,0.25]],
+# ])
+
+# cancerNode = bn.addNode('Cancer', ['None','Benign','Malignant'],[smokerNode])
 # cancerNode.setProbDist([[0.96,0.88,0.6],[0.03,0.08,0.25],[0.01,0.04,0.15]])
-# cancerdistribution = [0.935, 0.046, 0.019]
+# # cancerdistribution = [0.935, 0.046, 0.019]
 
-ageNode.observe()
-genderNode.observe()
-smokerNode.observe()
+# ageNode.observe()
+# genderNode.observe()
+# smokerNode.observe()
 # cancerNode.observe()
 
-tempNode = bn.addNode('Temp', ['A','B','C'])
-bn.removeNode(tempNode)
+# tempNode = bn.addNode('Temp', ['A','B','C'])
+# bn.removeNode(tempNode)
 
-smokerNode.setEvidence('Light')
-print(ageNode.getBelief())
+# smokerNode.setEvidence('Light')
+# print(ageNode.getBelief())
 
 # smokerNode.clearEvidence()
 # smokerNode.observe()
