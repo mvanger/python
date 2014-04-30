@@ -2,6 +2,8 @@
 # Sari Nahmad, Anthony Tockar, Mike Vanger
 
 import itertools
+import json
+import pdb
 
 class BayesNetwork:
 
@@ -42,6 +44,23 @@ class BayesNetwork:
         ### Will want to probably present this as a hierarchy - e.g. "level: nodeName"
         for node in self.nodes:
             print(node.name)
+
+    def jsonDefault(self, o):
+        t = o.__dict__.copy()
+        # print(t[t.keys()[0]])
+        temp = []
+        for x in t[t.keys()[0]]:
+            temp.append(x.readyForJSON())
+        # temp = [x.readyForJSON() for x in t["nodes"]]
+        t['nodes'] = temp
+        # pdb.set_trace()
+        jsonObject = {}
+        jsonObject['network'] = t
+        return jsonObject
+
+    def saveJSON(self, filepath):
+        with open(filepath, 'w') as outfile:
+             json.dump(self.jsonDefault(self), outfile, indent = 4, sort_keys=True)
 
 # Method to calculate each term in variable elimination algorithm
 def sumProduct(factor, nodes):
@@ -95,6 +114,17 @@ def sumProduct(factor, nodes):
 
         return fXs
 
+def object_decoder(obj):
+    new_object = BayesNetwork()
+    pdb.set_trace()
+    new_object.name = obj['network']['name']
+    new_object.values = obj['values']
+    return new_object
+
+def loadJSON(filepath):
+    json_data = open(filepath).read()
+    return json.loads(json_data, object_hook = object_decoder)
+
 ## Create nodes class
 class Node:
     '''
@@ -121,7 +151,7 @@ class Node:
             print('Evidence:\t' + str(self.evidence))       # Only show if evidence exists
         if self.belief:
             print('Belief:\t' + str(self.belief))       # Only show if belief exists
-        print('Parents:\t',end='')
+        # print('Parents:\t',end='')
         print([p.name for p in self.parents])         # Change to for loop with names
 
     # Clear all evidence
@@ -149,17 +179,17 @@ class Node:
         for node in self.bn.nodes:
             if node.evidence:
                 evidenceNodes.append(node)
-        print('Evidence = ',end='')
+        # print('Evidence = ',end='')
         print([node.name for node in evidenceNodes])
 
         # Create array with nodes to eliminate
         eliminateNodes = []
-        print('Nodes Remaining = ',end='')
+        # print('Nodes Remaining = ',end='')
         print([node.name for node in nodesRemaining])
         for node in nodesRemaining:
             if node != self and node not in evidenceNodes:
                 eliminateNodes.append(node)
-        print('Eliminate = ',end='')
+        # print('Eliminate = ',end='')
         print([node.name for node in eliminateNodes])
 
         # Create factors iteratively
@@ -172,11 +202,11 @@ class Node:
                     termNodes.append(node)
             factor[i+1]['Node'] = eliminateNodes[i].name
             ####### Debug
-            print('term names = ',end='')
+            # print('term names = ',end='')
             print([n.name for n in termNodes])
-            print('term probabilities = ',end='')
+            # print('term probabilities = ',end='')
             print([n.prob for n in termNodes])
-            print('term evidence = ',end='')
+            # print('term evidence = ',end='')
             print([n.evidence for n in termNodes])
             #############
             factor[i+1]['Prob'] = sumProduct(factor[i]['Prob'],termNodes)
@@ -186,6 +216,21 @@ class Node:
         belief = factor[len(eliminateNodes)]['Prob']
         # Remember to normalise
         return belief
+
+    def readyForJSON(self):
+        t = self.__dict__.copy()
+        t['bn'] = t['bn'].name
+        t['parents'] = [x.name for x in t['parents']]
+        return t
+
+    # def jsonDefault(self, obj):
+    #     t = obj.__dict__.copy()
+    #     t['bn'] = t['bn'].name
+    #     return t
+
+    # def saveJSON(self, filepath):
+    #     with open(filepath, 'w') as outfile:
+    #          json.dump(self, outfile, default=self.jsonDefault, indent = 4, sort_keys=True)
 
 
 ### Test functionality
@@ -198,35 +243,38 @@ B = net.addNode('B',['b1','b2','b3'],[A,C])
 A.setProbDist([0.9,0.1])
 C.setProbDist([0.1,0.2,0.3,0.4])
 B.setProbDist([
-           [ [0.2,0.4,0.4] , [0.33,0.33,0.34 ] ] , 
-           [ [0.1,0.5,0.4] , [0.3,0.1,0.6 ] ] , 
-           [ [0.01,0.01,0.98] , [0.2,0.7,0.1 ] ] , 
-           [ [0.2,0.1,0.7] , [0.9,0.05,0.05 ] ] 
+           [ [0.2,0.4,0.4] , [0.33,0.33,0.34 ] ] ,
+           [ [0.1,0.5,0.4] , [0.3,0.1,0.6 ] ] ,
+           [ [0.01,0.01,0.98] , [0.2,0.7,0.1 ] ] ,
+           [ [0.2,0.1,0.7] , [0.9,0.05,0.05 ] ]
          ])
 
 B.setEvidence('b3')
 
 B.observe()
 
-aAfterSettingB = A.getBelief()
-print("P(A|B=b3) =",aAfterSettingB)
+# aAfterSettingB = A.getBelief()
+# print("P(A|B=b3) =",aAfterSettingB)
 
 C.setEvidence('c4')
 
-aAfterSettingBC = A.getBelief();
-print("P(A|B=b3,C=c4) =",aAfterSettingBC)
+# aAfterSettingBC = A.getBelief();
+# print("P(A|B=b3,C=c4) =",aAfterSettingBC)
 
 # >>> P(A|B=b3,C=c4) = [ 0.9921, 0.0079 ]
 # This value is also correct!
 
-# Finally. What if I clear the evidence on node B. 
+# Finally. What if I clear the evidence on node B.
 # What is the distribution of A now?
 
 B.clearEvidence()
 
-aAfterSettingC = A.getBelief();
-print("P(A|C=c4) =",aAfterSettingC)
+# aAfterSettingC = A.getBelief();
+# print("P(A|C=c4) =",aAfterSettingC)
 
+# pdb.set_trace()
+# net.saveJSON('test.json')
+loadJSON('test.json')
 
 # bn = BayesNetwork('BN1')
 
