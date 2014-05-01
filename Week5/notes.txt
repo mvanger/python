@@ -1,0 +1,23 @@
+functions can take default parameters
+def split(line, delimiter = ","):
+
+that default parameter and all parameters that follow are optional
+default parameters can exhibit unusual behavior
+
+there are objects in memory
+labels that are grouped by namespace
+  these labels look for objects
+
+parameters are the labels declared in the def statement
+arguments are the objects passed when calling the function
+
+positional versus keyword arguments
+
+kayword parameters
+**kwargs => last parameter
+  dict of optional parameters
+*args
+  non declared positional arguments => list
+
+unpacking argument lists
+
