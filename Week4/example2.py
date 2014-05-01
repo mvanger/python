@@ -1,5 +1,6 @@
 from example import *
 import json
+import pdb
 
 # Make a new object
 test = Example()
@@ -18,13 +19,14 @@ print(test.values)
 # Save to json
 # test.__dict__ makes it a dict to save as json
 with open('data.json', 'w') as outfile:
-  json.dump(test.__dict__, outfile)
+  json.dump(test.__dict__, outfile, indent = 4, sort_keys=True)
 
 # Define a method to take JSON data and turn it into an Example object
 def object_decoder(obj):
   new_object = Example()
   new_object.nodes = obj['nodes']
   new_object.values = obj['values']
+  pdb.set_trace()
   return new_object
 
 # Opens json file

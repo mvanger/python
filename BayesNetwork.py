@@ -45,19 +45,26 @@ class BayesNetwork:
         for node in self.nodes:
             print(node.name)
 
+    '''
+    jsonDefault takes care of the JSON encoding for a Bayesian Network, by turning it into a dict and
+    setting the necessary values. The parameter "o" should be the Bayesian Network to be saved.
+    '''
     def jsonDefault(self, o):
         t = o.__dict__.copy()
-        # print(t[t.keys()[0]])
         temp = []
+        # Gets the nodes ready for JSON
+        # For some reason t['nodes'] does not work
+        # So we are using t.keys()[0] as a workaround
         for x in t[t.keys()[0]]:
             temp.append(x.readyForJSON())
-        # temp = [x.readyForJSON() for x in t["nodes"]]
         t['nodes'] = temp
-        # pdb.set_trace()
         jsonObject = {}
         jsonObject['network'] = t
         return jsonObject
 
+    '''
+    This method is called on a BN with a filepath, and the BN is saved in JSON format.
+    '''
     def saveJSON(self, filepath):
         with open(filepath, 'w') as outfile:
              json.dump(self.jsonDefault(self), outfile, indent = 4, sort_keys=True)
@@ -114,16 +121,43 @@ def sumProduct(factor, nodes):
 
         return fXs
 
-def object_decoder(obj):
-    new_object = BayesNetwork()
-    pdb.set_trace()
-    new_object.name = obj['network']['name']
-    new_object.values = obj['values']
-    return new_object
+# def object_decoder(obj):
+#     new_object = BayesNetwork()
+#     new_object.name = obj['network']['name']
+#     new_object.values = obj['values']
+#     return new_object
 
+'''
+This method loads a JSON file and turns the JSON into a new BN.
+'''
 def loadJSON(filepath):
+    # Opens the json file and reads the data
     json_data = open(filepath).read()
-    return json.loads(json_data, object_hook = object_decoder)
+    # Instantiates a new BN object
+    new_object = BayesNetwork()
+    t = json.loads(json_data)['network']
+    # Sets the BN name, and makes it a str
+    new_object.name = t['name'].encode('ascii')
+    # This stores each node
+    temp = []
+    # Creates and adds the nodes
+    for x in t['nodes']:
+        A = new_object.addNode(x['name'], x['values'], parents = [])
+        # Sets the node name as a str
+        A.name = A.name.encode('ascii')
+        # Sets the node's values as str
+        for y in range(0, len(A.values)):
+            A.values[y] = A.values[y].encode('ascii')
+        # Since the JSON file only has the name of the parent nodes, we need to loop through our temp
+        # list to find the correct parents.
+        for z in temp:
+            if z.name in x['parents']:
+                A.parents.append(z)
+        # Sets the CPT and the evidence
+        A.setProbDist(x['prob'])
+        A.setEvidence(x['evidence'])
+        temp.append(A)
+    return new_object
 
 ## Create nodes class
 class Node:
@@ -272,9 +306,10 @@ B.clearEvidence()
 # aAfterSettingC = A.getBelief();
 # print("P(A|C=c4) =",aAfterSettingC)
 
-# pdb.set_trace()
 # net.saveJSON('test.json')
-loadJSON('test.json')
+bn2 = loadJSON('test.json')
+bn2.saveJSON('test2.json')
+# pdb.set_trace()
 
 # bn = BayesNetwork('BN1')
 
