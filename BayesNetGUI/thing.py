@@ -9,14 +9,14 @@ class MyFrame(wx.Frame):
     """a frame with a panel"""
     def __init__(self, parent=None, id=-1, title=None):
         wx.Frame.__init__(self, parent, id, title)
-        self.panel = wx.Panel(self, size=(600, 600))
+        self.panel = wx.Panel(self, size=(800, 750))
         self.panel.Bind(wx.EVT_PAINT, self.on_paint)
         self.Fit()
     def on_paint(self, event):
         # establish the painting surface
         dc = wx.PaintDC(self.panel)
-        dc.SetPen(wx.Pen('blue', 4))
-        # draw a blue line (thickness = 4)
+        # dc.SetPen(wx.Pen('blue', 4))
+        # # draw a blue line (thickness = 4)
         # dc.DrawLine(50, 20, 300, 20)
         dc.SetPen(wx.Pen('black', 1))
         # draw a red rounded-rectangle
@@ -67,8 +67,10 @@ class MyFrame(wx.Frame):
         #     index += 1
 
 
-        nodes = [u'z', u'x', u'a', u'c', u'b', u'e', u'f']
-        parents = [[], [u'z'], [u'z'], [], [u'a', u'c'], [u'b'], [u'e']]
+        # nodes = [u'z', u'x', u'a', u'c', u'b', u'e', u'f']
+        # parents = [[], [u'z'], [u'z'], [], [u'a', u'c'], [u'b'], [u'e']]
+        nodes = ['a', 'c', 'b']
+        parents = [[], [], ['a', 'c']]
 
         x = 50
         y = 50
@@ -83,15 +85,23 @@ class MyFrame(wx.Frame):
             dc.DrawRoundedRectangleRect(rect, 50)
             dc.DrawImageLabel(nodeName, wx.NullBitmap, rect, alignment=100)
 
+        def drawParentArrow(parentNode):
+            # DrawLine arguments are two points: x1, y1, x2, y2
+            # Parent node: [x, level]
+            dc.DrawLine(parentNode[0] + 50, y + 100 + (150 * parentNode[1]), x + 50, y + (150 * level))
+            dc.DrawLine(x + 50, y + (150 * level), x + 40, y - 10 + (150 * level))
+            dc.DrawLine(x + 50, y + (150 * level), x + 60, y - 10 + (150 * level))
+
         for n in nodes:
             for p in parents[index]:
+                # check if we need a new level
                 if level != rects[p][1] + 1:
                     x = 50
-                level = rects[p][1] + 1
+                    level = rects[p][1] + 1
+                drawParentArrow(rects[p])
             rects[n] = [x, level]
             drawNode(n)
             x += 150
-            # nextLevel = 0
             index += 1
 
 
@@ -100,7 +110,7 @@ class MyFrame(wx.Frame):
 # test it ...
 
 app = wx.PySimpleApp()
-frame1 = MyFrame(title='rounded-rectangle & circle')
+frame1 = MyFrame(title='A Bayesian Network')
 frame1.Center()
 frame1.Show()
 app.MainLoop()
