@@ -56,7 +56,7 @@ for i in range(numPoints-1):
         y2 = (points[i][1]-points[j][1])**2
         dist = m.sqrt(x2+y2)         
         edge = {
-                'name':str(i)+str(j),
+                'name':str(i)+","+str(j),
                 'length':dist                
                 }
         edges.append(edge)
@@ -87,9 +87,11 @@ MST = []
 call function to find minimum weight and discard edges that would cause cycles
 """
 def findMinWeight():
-    bestEdge = edges[0]    
-    minDist = bestEdge['length']
+    bestEdge = ""    
+    minDist = 0
     print "starting edge "+bestEdge['name']+" length "+str(minDist)
+
+    removal = []
 
     """
     cycle through edges
@@ -98,8 +100,9 @@ def findMinWeight():
         """
         get beginning and ending nodes
         """
-        start = x['name'][0]
-        stop = x['name'][1]
+        name = x['name'].split(",")
+        start = name[0]
+        stop = name[1]
         """
         get color of beginning and ending nodes
         """
@@ -110,7 +113,10 @@ def findMinWeight():
         """
         if(startColor==stopColor):
             print "remove "+x['name']
-            edges.remove(x)
+            removal.append(x)
+        elif(bestEdge == ""):
+            bestEdge = x
+            minDist = x['length']
         else:
             print "consider "+x['name']+" length "+str(x['length'])+" against "+bestEdge['name']+" length "+str(bestEdge['length'])
             if (x['length']<minDist):
@@ -118,7 +124,13 @@ def findMinWeight():
                 minDist = x['length']
     
     print "bestEdge "+bestEdge['name']+" length "+str(bestEdge['length'])
+    
+    for x in removal:
+        edges.removal(x)
+    
     return bestEdge
+
+
 """
 used to look up the color of a given node
 """            
@@ -135,16 +147,16 @@ the loop continues untill all nodes are painted the same color
 while len(colors)>1:
     step += 1    
 
-    print "step"
-    print step
+    print "step "+str(step)
     print "*****************************************************************"
 
     bestEdge = findMinWeight()
     """
     get beginning and ending nodes
     """
-    start = bestEdge['name'][0]
-    stop = bestEdge['name'][1]
+    name = bestEdge['name'].split(",")
+    start = name[0]
+    stop = name[1]
     """
     get color of beginning and ending nodes
     """
