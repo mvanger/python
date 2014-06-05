@@ -68,16 +68,16 @@ def get_tuple_index(distinct_input_str, substring):
 # Tests #
 ###
 
-a = np.arange(60.).reshape(3,4,5)
-b = np.arange(24.).reshape(4,3,2)
-print np.einsum('ijk,jil->kl', a, b)
-print my_einsum('ijk,jil->kl', a, b)
+# a = np.arange(60.).reshape(3,4,5)
+# b = np.arange(24.).reshape(4,3,2)
+# print np.einsum('ijk,jil->kl', a, b)
+# print my_einsum('ijk,jil->kl', a, b)
 
-a = np.arange(25).reshape(5,5)
-b = np.arange(5)
+# a = np.arange(25).reshape(5,5)
+# b = np.arange(5)
 
-print np.einsum('ij,j->i', a, b)
-print my_einsum('ij,j->i', a, b)
+# print np.einsum('ij,j->i', a, b)
+# print my_einsum('ij,j->i', a, b)
 
-print np.einsum('ii->i', a)
-print my_einsum('ii->i', a)
+# print np.einsum('ii->i', a)
+# print my_einsum('ii->i', a)
