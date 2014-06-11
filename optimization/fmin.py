@@ -1,4 +1,6 @@
 from derivative import derivative
+from fsolve import fsolve
+import numpy as np
 
 # fmin computes the local minimum of a function f given an interval (bounds).
 # It takes optional parameters g and eps
@@ -14,7 +16,7 @@ def fmin(f, bounds, g = None, eps = 1.e-8):
   if not g:
     f_prime = derivative(f)
   else:
-    f_prime = g(f)
+    f_prime = g
   # Set the width of the interval
   width = abs(bounds[0]-bounds[1])/max(1,abs(bounds[0]))
   # Loop the algorithm
@@ -46,3 +48,29 @@ def fmin(f, bounds, g = None, eps = 1.e-8):
 # test = fmin(second,(1,3.1))
 # print(test) # returns 2.71828161379 (correct)
 
+##Kingsley's test script
+g = derivative(np.sin)
+print(g(1)) # should be 0.5403...
+
+g = derivative(lambda x : x**2)
+
+# 1
+print(g(-1)) # should be -2.0000
+
+# 2
+print (fsolve(np.sin,3)) # should be 3.14159....
+
+# 3
+print (fsolve(lambda x : 1/x - 1,2)) # should be 1.0000
+
+# 4
+print (fsolve(lambda x : 1/x + 1,2)) # Any output, including an error, is ok. The only thing that is not ok is if the interpreter hangs and their function does not return
+
+# 5
+print (fsolve(lambda x : 1/x - 2, 3, g=lambda x: -1)) # should be 0.5000
+
+# 6
+print (fmin(lambda x : (x-20)**2,(0,100))) # should be 20.0000
+
+# 7
+print (fmin(lambda x : (x-30)**2,(0,100),g=lambda x:x-30)) # should be 30.0000

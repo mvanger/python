@@ -14,7 +14,7 @@ def fsolve(f, x0, g = None, eps = 1.e-8, max_iter = 100):
     if not g:
       f_prime = derivative(f)
     else:
-      f_prime = g(f)
+      f_prime = g
     # Compute f_prime(x0)
     y_prime = f_prime(x0)
     # Check error bound
