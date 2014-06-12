@@ -67,7 +67,11 @@ print (fsolve(lambda x : 1/x - 1,2)) # should be 1.0000
 print (fsolve(lambda x : 1/x + 1,2)) # Any output, including an error, is ok. The only thing that is not ok is if the interpreter hangs and their function does not return
 
 # 5
+print ("This should be 0.5, but Newton's algorithm depends on the initial guess and the gradient")
 print (fsolve(lambda x : 1/x - 2, 3, g=lambda x: -1)) # should be 0.5000
+
+print ("Changing the initial guess to 2 gives the correct answer")
+print (fsolve(lambda x : 1/x - 2, 2, g=lambda x: -1))
 
 # 6
 print (fmin(lambda x : (x-20)**2,(0,100))) # should be 20.0000
